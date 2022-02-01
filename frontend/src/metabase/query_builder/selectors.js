@@ -319,6 +319,8 @@ export const getLastRunQuestion = createSelector(
     card && metadata && new Question(card, metadata, parameterValues),
 );
 
+export const getZoomedRowIndex = state => state.qb.zoomedRow;
+
 export const getMode = createSelector(
   [getLastRunQuestion],
   question => question && question.mode(),
