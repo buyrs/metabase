@@ -61,6 +61,7 @@ import {
   getNativeEditorSelectedText,
   getSnippetCollectionId,
   getQueryResults,
+  getZoomedRowIndex,
   isBasedOnExistingQuestion,
 } from "./selectors";
 import { trackNewQuestionSaved } from "./analytics";
@@ -1478,6 +1479,17 @@ export const CLEAR_OBJECT_DETAIL_FK_REFERENCES =
 export const VIEW_NEXT_OBJECT_DETAIL = "metabase/qb/VIEW_NEXT_OBJECT_DETAIL";
 export const viewNextObjectDetail = () => {
   return (dispatch, getState) => {
+    const zoomedRowIndex = getZoomedRowIndex(getState());
+    if (Number.isSafeInteger(zoomedRowIndex)) {
+      const [{ data }] = getQueryResults(getState()).reverse();
+      const nextRowIndex = zoomedRowIndex + 1;
+      const canGoForward = data.rows.length - 1 !== nextRowIndex;
+      if (canGoForward) {
+        dispatch(zoomInRow({ rowIndex: zoomedRowIndex + 1 }));
+      }
+      return;
+    }
+
     const question = getQuestion(getState());
     const filter = question.query().filters()[0];
 
@@ -1503,6 +1515,15 @@ export const VIEW_PREVIOUS_OBJECT_DETAIL =
 
 export const viewPreviousObjectDetail = () => {
   return (dispatch, getState) => {
+    const zoomedRowIndex = getZoomedRowIndex(getState());
+    if (Number.isSafeInteger(zoomedRowIndex)) {
+      const canGoBack = zoomedRowIndex !== 0;
+      if (canGoBack) {
+        dispatch(zoomInRow({ rowIndex: zoomedRowIndex - 1 }));
+      }
+      return;
+    }
+
     const question = getQuestion(getState());
     const filter = question.query().filters()[0];
 
