@@ -28,6 +28,7 @@ import {
   getTableMetadata,
   getTableForeignKeys,
   getTableForeignKeyReferences,
+  getZoomedRowIndex,
 } from "metabase/query_builder/selectors";
 
 import { columnSettings } from "metabase/visualizations/lib/settings/column";
@@ -39,6 +40,7 @@ const mapStateToProps = state => ({
   table: getTableMetadata(state),
   tableForeignKeys: getTableForeignKeys(state),
   tableForeignKeyReferences: getTableForeignKeyReferences(state),
+  zoomedRowIndex: getZoomedRowIndex(state),
 });
 
 // ugh, using function form of mapDispatchToProps here due to circlular dependency with actions
@@ -89,16 +91,27 @@ export class ObjectDetail extends Component {
     }
   }
 
+  getMode = () => {
+    const { zoomedRowIndex } = this.props;
+    return Number.isSafeInteger(zoomedRowIndex) ? "row-index" : "query";
+  };
+
+  getObjectRow = () => {
+    const { data, zoomedRowIndex } = this.props;
+    const rowIndex = this.getMode() === "row-index" ? zoomedRowIndex : 0;
+    return data.rows[rowIndex];
+  };
+
   getIdValue() {
     if (!this.props.data) {
       return null;
     }
 
     const {
-      data: { cols, rows },
+      data: { cols },
     } = this.props;
     const columnIndex = _.findIndex(cols, col => isPK(col));
-    return rows[0][columnIndex];
+    return this.getObjectRow()[columnIndex];
   }
 
   foreignKeyClicked = fk => {
@@ -178,18 +191,19 @@ export class ObjectDetail extends Component {
 
   renderDetailsTable() {
     const {
-      data: { cols, rows },
+      data: { cols },
     } = this.props;
+    const objectRow = this.getObjectRow();
     return cols.map((column, columnIndex) => (
       <div className="Grid Grid--1of2 mb2" key={columnIndex}>
         <div className="Grid-cell">
-          {this.cellRenderer(column, rows[0][columnIndex], true)}
+          {this.cellRenderer(column, objectRow[columnIndex], true)}
         </div>
         <div
           style={{ wordWrap: "break-word" }}
           className="Grid-cell text-bold text-dark"
         >
-          {this.cellRenderer(column, rows[0][columnIndex], false)}
+          {this.cellRenderer(column, objectRow[columnIndex], false)}
         </div>
       </div>
     ));
