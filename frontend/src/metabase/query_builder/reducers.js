@@ -39,6 +39,7 @@ import {
   CANCEL_DATASET_CHANGES,
   SET_RESULTS_METADATA,
   SET_METADATA_DIFF,
+  ZOOM_IN_ROW,
   onEditSummary,
   onCloseSummary,
   onAddFilter,
@@ -259,6 +260,17 @@ export const uiControls = handleActions(
     }),
   },
   DEFAULT_UI_CONTROLS,
+);
+
+export const zoomedRow = handleActions(
+  {
+    [RESET_QB]: { next: () => null },
+    [INITIALIZE_QB]: { next: () => null },
+    [ZOOM_IN_ROW]: {
+      next: (state, { payload }) => payload.rowIndex,
+    },
+  },
+  null,
 );
 
 // the card that is actively being worked on
