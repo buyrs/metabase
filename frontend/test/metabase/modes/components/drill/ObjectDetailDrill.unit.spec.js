@@ -1,4 +1,5 @@
 import ObjectDetailDrill from "metabase/modes/components/drill/ObjectDetailDrill";
+import { ZOOM_IN_ROW } from "metabase/query_builder/actions";
 import { ORDERS, PRODUCTS } from "__support__/sample_database_fixture";
 
 const DEFAULT_CELL_VALUE = 1;
@@ -7,10 +8,11 @@ function setup({
   question = ORDERS.question(),
   column = ORDERS.ID.column(),
   value = DEFAULT_CELL_VALUE,
+  rowIndex = 0,
 } = {}) {
   const actions = ObjectDetailDrill({
     question,
-    clicked: { column, value },
+    clicked: { column, value, origin: { rowIndex } },
   });
   return {
     actions,
@@ -47,20 +49,23 @@ describe("ObjectDetailDrill", () => {
   });
 
   describe("PK cells", () => {
-    const { actions, cellValue } = setup({
+    const ROW_INDEX = 42;
+    const { actions } = setup({
       column: ORDERS.ID.column(),
+      rowIndex: ROW_INDEX,
     });
 
     it("should return object detail filter", () => {
       expect(actions).toMatchObject([{ name: "object-detail" }]);
     });
 
-    it("should apply object detail filter correctly", () => {
+    it("should return correct redux action", () => {
       const [action] = actions;
-      const card = action.question().card();
-      expect(card.dataset_query.query).toEqual({
-        "source-table": ORDERS.id,
-        filter: ["=", ORDERS.ID.reference(), cellValue],
+      expect(action.action()).toEqual({
+        type: ZOOM_IN_ROW,
+        payload: {
+          rowIndex: ROW_INDEX,
+        },
       });
     });
   });
