@@ -308,10 +308,15 @@ export class ObjectDetail extends Component {
   };
 
   render() {
-    const { data, table } = this.props;
+    const { data, table, zoomedRowIndex } = this.props;
     if (!data) {
       return false;
     }
+
+    const isRowIndexMode = this.getMode() === "row-index";
+    const canGoBack = isRowIndexMode ? zoomedRowIndex !== 0 : idValue <= 1;
+    const canGoForward =
+      !isRowIndexMode || data.rows.length - 1 !== zoomedRowIndex;
 
     const tableName = table ? table.objectName() : t`Unknown`;
     // TODO: once we nail down the "title" column of each table this should be something other than the id
@@ -341,7 +346,7 @@ export class ObjectDetail extends Component {
             <div
               className={cx(
                 "absolute left cursor-pointer text-brand-hover lg-ml2",
-                { disabled: idValue <= 1 },
+                { disabled: !canGoBack },
               )}
               style={{
                 top: "50%",
@@ -354,7 +359,10 @@ export class ObjectDetail extends Component {
               />
             </div>
             <div
-              className="absolute right cursor-pointer text-brand-hover lg-ml2"
+              className={cx(
+                "absolute right cursor-pointer text-brand-hover lg-ml2",
+                { disabled: !canGoForward },
+              )}
               style={{
                 top: "50%",
                 transform: "translate(50%, -50%)",
